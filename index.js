@@ -1,4 +1,3 @@
-
 /*
 Task-1
 Simulation of an Event that Follows Given Biasness
@@ -23,15 +22,15 @@ This is just one of the possibilities.
 */
 function generateOccurrences(outcomes, numOccurrences) {
   const occurrenceCount = {};
-  
+
   for (const outcome in outcomes) {
     occurrenceCount[outcome] = 0;
   }
-  
+
   for (let i = 0; i < numOccurrences; i++) {
     const randNum = Math.random() * 100;
     let cumulativeProb = 0;
-    
+
     for (const outcome in outcomes) {
       cumulativeProb += outcomes[outcome];
       if (randNum <= cumulativeProb) {
@@ -40,7 +39,7 @@ function generateOccurrences(outcomes, numOccurrences) {
       }
     }
   }
-  
+
   return occurrenceCount;
 }
 
@@ -52,6 +51,51 @@ const occurrenceCount = generateOccurrences(outcomes, numOccurrences);
 for (const outcome in occurrenceCount) {
   console.log(`${outcome} appeared ${occurrenceCount[outcome]} times`);
 }
+
+function testGenerateOccurrences() {
+  const outcomes = { 1: 10, 2: 30, 3: 15, 4: 15, 5: 30, 6: 0 };
+  const numOccurrences = 1000;
+
+  const occurrenceCount = generateOccurrences(outcomes, numOccurrences);
+
+  // Verify that the occurrenceCount object contains the expected keys
+  const expectedKeys = Object.keys(outcomes);
+  const actualKeys = Object.keys(occurrenceCount);
+  const keysMatch = expectedKeys.every((key) => actualKeys.includes(key));
+  console.assert(
+    keysMatch,
+    "The occurrenceCount object keys do not match the expected keys."
+  );
+
+  // Verify that the total count of occurrences matches the expected numOccurrences
+  const totalCount = Object.values(occurrenceCount).reduce(
+    (total, count) => total + count,
+    0
+  );
+  console.assert(
+    totalCount === numOccurrences,
+    "The total count of occurrences does not match the expected numOccurrences."
+  );
+
+  // Verify that the count of each outcome is within a reasonable range based on the probabilities
+  for (const outcome in occurrenceCount) {
+    const probability = outcomes[outcome] / 100;
+    const expectedCount = Math.round(probability * numOccurrences);
+    const actualCount = occurrenceCount[outcome];
+    const lowerBound = expectedCount - Math.sqrt(expectedCount);
+    const upperBound = expectedCount + Math.sqrt(expectedCount);
+    console.assert(
+      actualCount >= lowerBound && actualCount <= upperBound,
+      `The count of outcome ${outcome} is outside the expected range.`
+    );
+  }
+
+  console.log("All test cases passed.");
+}
+
+// Run the test case
+testGenerateOccurrences();
+
 /*
 Task-2
 Evaluate multiple mathematical expressions at once using a Web API
@@ -77,24 +121,40 @@ sqrt(-3^2 - 4^2) = 5i
 
 */
 async function evaluateExpressions(expressions) {
-    for (const expression of expressions) {
-      try {
-        const response = await fetch(`https://api.mathjs.org/v4/?expr=${encodeURIComponent(expression)}`);
-        const data = await response.json();
-        
-        if (data?.error) {
-          console.log(`Error evaluating expression "${expression}": ${data?.error}`);
-        } else {
-          console.log(`Result of expression "${expression}": ${data}`);
-        }
-      } catch (error) {
-        console.log(`Error evaluating expression "${expression}": Math Error!`);
+  for (const expression of expressions) {
+    try {
+      const response = await fetch(
+        `https://api.mathjs.org/v4/?expr=${encodeURIComponent(expression)}`
+      );
+      const data = await response.json();
+
+      if (data?.error) {
+        console.log(
+          `Error evaluating expression "${expression}": ${data?.error}`
+        );
+      } else {
+        console.log(`Result of expression "${expression}": ${data}`);
       }
+    } catch (error) {
+      console.log(`Error evaluating expression "${expression}": Math Error!`);
     }
   }
-  
-  // Example usage
+}
+
+// Example usage
+const expressions = ["2 + 2", "3 * 5", "sqrt(16)", "10 / 0"];
+
+evaluateExpressions(expressions);
+
+async function testEvaluateExpressions() {
   const expressions = ["2 + 2", "3 * 5", "sqrt(16)", "10 / 0"];
-  
-  evaluateExpressions(expressions);
-  
+
+  try {
+    await evaluateExpressions(expressions);
+  } catch (error) {
+    console.error("An error occurred while evaluating expressions:", error);
+  }
+}
+
+// Run the test case
+testEvaluateExpressions();
